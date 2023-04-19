@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 /**
@@ -34,13 +35,22 @@ public class BlendGame extends ApplicationAdapter {
 	// store initialized by lazy data.
 	private Map<Integer, Texture> visibleCircleTextures;
 	private Map<Integer, FrameBuffer> frameBuffers;
+	private Rectangle rectangle1;
+	private Rectangle rectangle2;
 
 	@Override
 	public void create() {
 		visibleCircleTextures = new HashMap<Integer, Texture>();
 		frameBuffers = new HashMap<Integer, FrameBuffer>();
 
-		donut = new Texture("donut.png");
+		// donut = new Texture("donut.png");
+
+		// Test with aphids as in Kokcinelo.
+		Pixmap aphidPixmap1 = new Pixmap(new FileHandle("aphid.png"));
+		Pixmap aphidPixmap2 = new Pixmap(80, 80, aphidPixmap1.getFormat());
+		aphidPixmap2.drawPixmap(aphidPixmap1, 0, 0, aphidPixmap1.getWidth(), aphidPixmap1.getHeight(), 0, 0, aphidPixmap2.getWidth(),
+				aphidPixmap2.getHeight());
+		donut = new Texture(aphidPixmap2);
 
 		// frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, visible.getWidth(), visible.getHeight(), false);
 
@@ -54,9 +64,19 @@ public class BlendGame extends ApplicationAdapter {
 		donutsPoints.add(new Point(0, 0));
 		donutsPoints.add(new Point(30, 0));
 		donutsPoints.add(new Point(-60, 0));
+		// lots of invisible donuts
+		// for (int i = 0; i < 1000000; i++) {
+		// donutsPoints.add(new Point(1000 + i, 1000 + i));
+		// }
+		// lots of visible donuts
+		for (int i = 0; i < 1000; i++) {
+			donutsPoints.add(new Point((int) (Math.random() * 1000), (int) (Math.random() * 1000)));
+		}
 
 		pxmVisible = new Pixmap(new FileHandle("visible2.png"));
 
+		rectangle1 = new Rectangle(0, 0, 0, 0);
+		rectangle2 = new Rectangle(0, 0, 0, 0);
 	}
 	/**
 	 * Draw all creatures in the visible area.
@@ -67,9 +87,15 @@ public class BlendGame extends ApplicationAdapter {
 		spriteBatch.begin();
 		ScreenUtils.clear(Color.CLEAR);
 		// TODO normal draw of all Creatures
+		rectangle1.set(visibleArea.getX(), visibleArea.getY(), visibleArea.getWidth(), visibleArea.getHeight());
 		for (Point p : donutsPoints) {
-			// TODO draw only if in visible area (it may improve performance)
-			spriteBatch.draw(donut, p.x - visibleArea.getX(), p.y - visibleArea.getY());
+			// Draw only if in visible area to improve performance
+			// It can be done with setVisible(boolean b) for Stage, but may cost more time than just draw all.
+			// TODO to test with setVisible(boolean b) for Stage.
+			rectangle2.set(p.x, p.y, donut.getWidth(), donut.getHeight());
+			if (rectangle1.overlaps(rectangle2)) {
+				spriteBatch.draw(donut, p.x - visibleArea.getX(), p.y - visibleArea.getY());
+			}
 		}
 	}
 	/**
