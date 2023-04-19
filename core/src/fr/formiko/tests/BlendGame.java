@@ -11,7 +11,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
@@ -20,6 +20,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+/**
+ * Simple example of draw only visible area of all map texture.
+ */
 public class BlendGame extends ApplicationAdapter {
 	private SpriteBatch spriteBatch;
 	private Texture donut;
@@ -37,7 +40,6 @@ public class BlendGame extends ApplicationAdapter {
 		visibleCircleTextures = new HashMap<Integer, Texture>();
 		frameBuffers = new HashMap<Integer, FrameBuffer>();
 
-		Gdx.gl20.glLineWidth(2);
 		donut = new Texture("donut.png");
 
 		// frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, visible.getWidth(), visible.getHeight(), false);
@@ -56,35 +58,45 @@ public class BlendGame extends ApplicationAdapter {
 		pxmVisible = new Pixmap(new FileHandle("visible2.png"));
 
 	}
-	private void drawCircles(VisibleArea visibleArea) {
-
+	/**
+	 * Draw all creatures in the visible area.
+	 */
+	private void drawVisibleAreaCreature(VisibleArea visibleArea) {
 		/* An example circle, remember to flush before changing the blending function */
-		spriteBatch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		spriteBatch.setBlendFunction(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		spriteBatch.begin();
 		ScreenUtils.clear(Color.CLEAR);
+		// TODO normal draw of all Creatures
 		for (Point p : donutsPoints) {
+			// TODO draw only if in visible area (it may improve performance)
 			spriteBatch.draw(donut, p.x - visibleArea.getX(), p.y - visibleArea.getY());
 		}
-
+	}
+	/**
+	 * Draw a mask over the visible area.
+	 * Mask will remove some previously drawn pixels depending of visible circle texture.
+	 * Colored part of the mask will be removed (with same alpha).
+	 */
+	private void drawVisibleAreaMask(VisibleArea visibleArea) {
 		/* We'll need blending enabled for the technique to work */
-		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glEnable(GL30.GL_BLEND);
 
 		/*
 		 * With this blending function, wherever we draw pixels next
 		 * we will actually remove previously drawn pixels.
 		 */
 		spriteBatch.flush();
-		// Gdx.gl.glBlendFuncSeparate(GL20.GL_ZERO, GL20.GL_ONE, GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA); // don't work
-		spriteBatch.setBlendFunctionSeparate(GL20.GL_ZERO, GL20.GL_ONE, GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		// Gdx.gl.glBlendFuncSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA); // don't work
+		spriteBatch.setBlendFunctionSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		// 0, 0 because we are drawing in a frame buffer centered over the visible texture.
 		spriteBatch.draw(getVisibleCircleTexture(visibleArea.getRadius()), 0, 0);
 		spriteBatch.flush();
 		spriteBatch.end();
 
 		/* Restore defaults. */
-		Gdx.gl.glDisable(GL20.GL_BLEND);
+		Gdx.gl.glDisable(GL30.GL_BLEND);
 		// Next line is needed so that something is actually draw on user screen.
-		spriteBatch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		spriteBatch.setBlendFunction(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	@Override
@@ -92,16 +104,19 @@ public class BlendGame extends ApplicationAdapter {
 		long time = System.currentTimeMillis();
 		ScreenUtils.clear(Color.GREEN);
 
+		// TODO for each Creature ally with Player one (and player one)
 		for (VisibleArea visibleArea : visibleAreas) {
+			// draw visible area into a frame buffer.
 			getFrameBuffers(visibleArea.getRadius()).bind();
-			drawCircles(visibleArea);
+			drawVisibleAreaCreature(visibleArea);
+			drawVisibleAreaMask(visibleArea);
 			getFrameBuffers(visibleArea.getRadius()).end();
 
+			// draw frame buffer into screen.
 			Texture texture = getFrameBuffers(visibleArea.getRadius()).getColorBufferTexture();
 			Sprite sprite = new Sprite(texture);
 			sprite.flip(false, true);
 			sprite.setPosition(visibleArea.getX(), visibleArea.getY());
-
 			spriteBatch.begin();
 			sprite.draw(spriteBatch);
 			spriteBatch.end();
@@ -166,12 +181,3 @@ public class BlendGame extends ApplicationAdapter {
 		}
 	}
 }
-
-
-// for (Creature c : visibleCreatures) {
-// draw in a frame buffer all creatures.
-// draw in the same frame buffer c.getVisibleArea().
-// draw the frame buffer on the screen.
-// }
-
-// Frame buffer have alpha so they wont hide each other.
