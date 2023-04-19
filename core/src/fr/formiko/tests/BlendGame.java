@@ -11,15 +11,19 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * Simple example of draw only visible area of all map texture.
@@ -37,6 +41,7 @@ public class BlendGame extends ApplicationAdapter {
 	private Map<Integer, FrameBuffer> frameBuffers;
 	private Rectangle rectangle1;
 	private Rectangle rectangle2;
+	private ShapeDrawer shapeDrawer;
 
 	@Override
 	public void create() {
@@ -56,9 +61,10 @@ public class BlendGame extends ApplicationAdapter {
 
 		spriteBatch = new SpriteBatch();
 
-		visibleAreas.add(new VisibleArea(20, 20, 150));
-		visibleAreas.add(new VisibleArea(200, 280, 100));
-		visibleAreas.add(new VisibleArea(-100, 350, 100));
+		// visibleAreas.add(new VisibleArea(20, 20, 150));
+		// visibleAreas.add(new VisibleArea(200, 280, 100));
+		// visibleAreas.add(new VisibleArea(-100, 350, 100));
+		visibleAreas.add(new VisibleArea(0, 0, 100));
 
 
 		donutsPoints.add(new Point(0, 0));
@@ -113,11 +119,21 @@ public class BlendGame extends ApplicationAdapter {
 		 */
 		spriteBatch.flush();
 		// Gdx.gl.glBlendFuncSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA); // don't work
-		spriteBatch.setBlendFunctionSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA);
-		// 0, 0 because we are drawing in a frame buffer centered over the visible texture.
-		spriteBatch.draw(getVisibleCircleTexture(visibleArea.getRadius()), 0, 0);
+
+		// with texture
+		// spriteBatch.setBlendFunctionSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		// // 0, 0 because we are drawing in a frame buffer centered over the visible texture.
+		// spriteBatch.draw(getVisibleCircleTexture(visibleArea.getRadius()), 0, 0);
+
+		// with circle
+		Gdx.gl.glColorMask(false, false, false, true);
+		spriteBatch.setBlendFunction(GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		shapeDrawer.filledCircle(visibleArea.getX() + visibleArea.getWidth() / 2, visibleArea.getY() + visibleArea.getHeight() / 2,
+				visibleArea.getRadius(), Color.RED);
+
 		spriteBatch.flush();
 		spriteBatch.end();
+		Gdx.gl.glColorMask(true, true, true, true);
 
 		/* Restore defaults. */
 		Gdx.gl.glDisable(GL30.GL_BLEND);
@@ -129,6 +145,10 @@ public class BlendGame extends ApplicationAdapter {
 	public void render() {
 		long time = System.currentTimeMillis();
 		ScreenUtils.clear(Color.GREEN);
+
+		if (shapeDrawer == null) {
+			shapeDrawer = createShapeDrawer(spriteBatch);
+		}
 
 		// TODO for each Creature ally with Player one (and player one)
 		for (VisibleArea visibleArea : visibleAreas) {
@@ -180,6 +200,16 @@ public class BlendGame extends ApplicationAdapter {
 		return frameBuffers.get(radius);
 	}
 
+	public static ShapeDrawer createShapeDrawer(Batch batch) {
+		Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+		pixmap.setColor(Color.WHITE);
+		pixmap.drawPixel(0, 0);
+		Texture texture = new Texture(pixmap); // remember to dispose of later
+		pixmap.dispose();
+		TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
+		return new ShapeDrawer(batch, region);
+	}
+
 	private class VisibleArea {
 		private int x;
 		private int y;
@@ -207,3 +237,7 @@ public class BlendGame extends ApplicationAdapter {
 		}
 	}
 }
+
+
+// pour les créatures partiellement visible c'est bon, mais pour la zone sombre c'est pas encore bon.
+// pour les icones c'est : draw Creatures into a FrameBuffer. Overwrite the FrameBuffer with a circle mask (alpha only).
