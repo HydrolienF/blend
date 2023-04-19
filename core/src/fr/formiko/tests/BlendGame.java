@@ -28,9 +28,9 @@ public class BlendGame extends ApplicationAdapter {
 	public void create() {
 		Gdx.gl20.glLineWidth(2);
 		donut = new Texture("donut.png");
-		visible = new Texture("visible.png");
+		visible = new Texture("visible2.png");
 
-		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, visible.getWidth(), visible.getHeight(), false);
 
 		spriteBatch = new SpriteBatch();
 	}
@@ -40,6 +40,7 @@ public class BlendGame extends ApplicationAdapter {
 		spriteBatch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		spriteBatch.begin();
 		// ScreenUtils.clear(Color.CLEAR);
+		spriteBatch.draw(donut, -100, -100);
 		spriteBatch.draw(donut, 0, 0);
 		spriteBatch.draw(donut, 30, 0);
 
@@ -75,6 +76,7 @@ public class BlendGame extends ApplicationAdapter {
 		Texture texture = frameBuffer.getColorBufferTexture();
 		Sprite sprite = new Sprite(texture);
 		sprite.flip(false, true);
+		// sprite.setPosition(30, 50);
 
 		spriteBatch.begin();
 		sprite.draw(spriteBatch);
