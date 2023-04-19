@@ -1,6 +1,7 @@
 package fr.formiko.tests;
 
 import java.util.ArrayList;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -11,8 +12,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 public class BlendGame extends ApplicationAdapter {
@@ -22,18 +21,14 @@ public class BlendGame extends ApplicationAdapter {
 	List<Integer> times = new ArrayList<>();
 	Pixmap pixmap;
 	Pixmap pxmVisible;
-	private ShapeRenderer shapeRenderer;
 	private FrameBuffer frameBuffer;
 	private Sprite mask;
 
 	@Override
 	public void create() {
-		shapeRenderer = new ShapeRenderer();
-		shapeRenderer.setAutoShapeType(true);
 		Gdx.gl20.glLineWidth(2);
 		donut = new Texture("donut.png");
 		visible = new Texture("visible.png");
-		mask = new Sprite(visible);
 
 		frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
 
@@ -42,11 +37,9 @@ public class BlendGame extends ApplicationAdapter {
 	private void drawCircles() {
 
 		/* An example circle, remember to flush before changing the blending function */
-		// shapeRenderer.setColor(Color.RED);
-		// shapeRenderer.circle(200, 200, 100);
-		// shapeRenderer.flush();
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		spriteBatch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		spriteBatch.begin();
+		// ScreenUtils.clear(Color.CLEAR);
 		spriteBatch.draw(donut, 0, 0);
 		spriteBatch.draw(donut, 30, 0);
 
@@ -58,35 +51,16 @@ public class BlendGame extends ApplicationAdapter {
 		 * we will actually remove previously drawn pixels.
 		 */
 		spriteBatch.flush();
-		Gdx.gl.glBlendFuncSeparate(GL20.GL_ZERO, GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA, GL20.GL_ONE_MINUS_DST_ALPHA);
-		// shapeRenderer.circle(300, 200, 70);
-		// shapeRenderer.circle(100, 200, 35);
-		// shapeRenderer.flush();
-		// spriteBatch.draw(visible, 0, 0);
-		mask.draw(spriteBatch);
+		// Gdx.gl.glBlendFuncSeparate(GL20.GL_ZERO, GL20.GL_ONE, GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA); // don't work
+		spriteBatch.setBlendFunctionSeparate(GL20.GL_ZERO, GL20.GL_ONE, GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		spriteBatch.draw(visible, 0, 0);
 		spriteBatch.flush();
 		spriteBatch.end();
 
 		/* Restore defaults. */
 		Gdx.gl.glDisable(GL20.GL_BLEND);
-
-		/*
-		 * The default blend function in case we need standard blending elsewhere.
-		 * Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		 */
-	}
-
-	private void drawContours() {
-		shapeRenderer.set(ShapeType.Line);
-
-		/* Contour of the masked circle */
-		shapeRenderer.setColor(Color.GREEN);
-		shapeRenderer.circle(200, 200, 100);
-
-		/* Contour of the masks */
-		shapeRenderer.setColor(Color.CYAN);
-		shapeRenderer.circle(300, 200, 70);
-		shapeRenderer.circle(100, 200, 35);
+		// Next line is needed so that something is actually draw on user screen.
+		spriteBatch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	@Override
@@ -95,11 +69,7 @@ public class BlendGame extends ApplicationAdapter {
 		ScreenUtils.clear(Color.GREEN);
 
 		frameBuffer.bind();
-		// shapeRenderer.begin();
-		// shapeRenderer.set(ShapeType.Filled);
 		drawCircles();
-		// drawContours();
-		// shapeRenderer.end();
 		frameBuffer.end();
 
 		Texture texture = frameBuffer.getColorBufferTexture();
@@ -117,6 +87,7 @@ public class BlendGame extends ApplicationAdapter {
 		// spriteBatch.dispose();
 		// donut.dispose();
 		// visible.dispose();
-		System.out.println(times.stream().mapToInt(Integer::intValue).summaryStatistics().getAverage() + " ms in average.");
+		IntSummaryStatistics stats = times.stream().mapToInt(Integer::intValue).summaryStatistics();
+		System.out.println(stats.getAverage() + " ms in average. (max: " + stats.getMax() + " ms)");
 	}
 }
