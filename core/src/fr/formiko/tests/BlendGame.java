@@ -11,7 +11,6 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
@@ -48,23 +47,23 @@ public class BlendGame extends ApplicationAdapter {
 		visibleCircleTextures = new HashMap<Integer, Texture>();
 		frameBuffers = new HashMap<Integer, FrameBuffer>();
 
-		// donut = new Texture("donut.png");
+		donut = new Texture("donut.png");
 
-		// Test with aphids as in Kokcinelo.
-		Pixmap aphidPixmap1 = new Pixmap(new FileHandle("aphid.png"));
-		Pixmap aphidPixmap2 = new Pixmap(80, 80, aphidPixmap1.getFormat());
-		aphidPixmap2.drawPixmap(aphidPixmap1, 0, 0, aphidPixmap1.getWidth(), aphidPixmap1.getHeight(), 0, 0, aphidPixmap2.getWidth(),
-				aphidPixmap2.getHeight());
-		donut = new Texture(aphidPixmap2);
+		// // Test with aphids as in Kokcinelo.
+		// Pixmap aphidPixmap1 = new Pixmap(new FileHandle("aphid.png"));
+		// Pixmap aphidPixmap2 = new Pixmap(80, 80, aphidPixmap1.getFormat());
+		// aphidPixmap2.drawPixmap(aphidPixmap1, 0, 0, aphidPixmap1.getWidth(), aphidPixmap1.getHeight(), 0, 0, aphidPixmap2.getWidth(),
+		// aphidPixmap2.getHeight());
+		// donut = new Texture(aphidPixmap2);
 
 		// frameBuffer = new FrameBuffer(Pixmap.Format.RGBA8888, visible.getWidth(), visible.getHeight(), false);
 
 		spriteBatch = new SpriteBatch();
 
-		// visibleAreas.add(new VisibleArea(20, 20, 150));
-		// visibleAreas.add(new VisibleArea(200, 280, 100));
-		// visibleAreas.add(new VisibleArea(-100, 350, 100));
-		visibleAreas.add(new VisibleArea(0, 0, 100));
+		visibleAreas.add(new VisibleArea(20, 20, 150));
+		visibleAreas.add(new VisibleArea(200, 280, 100));
+		visibleAreas.add(new VisibleArea(-100, 350, 100));
+		// visibleAreas.add(new VisibleArea(0, 0, 100));
 
 
 		donutsPoints.add(new Point(0, 0));
@@ -75,9 +74,9 @@ public class BlendGame extends ApplicationAdapter {
 		// donutsPoints.add(new Point(1000 + i, 1000 + i));
 		// }
 		// lots of visible donuts
-		for (int i = 0; i < 1000; i++) {
-			donutsPoints.add(new Point((int) (Math.random() * 1000), (int) (Math.random() * 1000)));
-		}
+		// for (int i = 0; i < 1000; i++) {
+		// donutsPoints.add(new Point((int) (Math.random() * 1000), (int) (Math.random() * 1000)));
+		// }
 
 		pxmVisible = new Pixmap(new FileHandle("visible2.png"));
 
@@ -121,15 +120,15 @@ public class BlendGame extends ApplicationAdapter {
 		// Gdx.gl.glBlendFuncSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA); // don't work
 
 		// with texture
-		// spriteBatch.setBlendFunctionSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA);
-		// // 0, 0 because we are drawing in a frame buffer centered over the visible texture.
-		// spriteBatch.draw(getVisibleCircleTexture(visibleArea.getRadius()), 0, 0);
+		spriteBatch.setBlendFunctionSeparate(GL30.GL_ZERO, GL30.GL_ONE, GL30.GL_ZERO, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		// 0, 0 because we are drawing in a frame buffer centered over the visible texture.
+		spriteBatch.draw(getVisibleCircleTexture(visibleArea.getRadius()), 0, 0);
 
 		// with circle
-		Gdx.gl.glColorMask(false, false, false, true);
-		spriteBatch.setBlendFunction(GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		shapeDrawer.filledCircle(visibleArea.getX() + visibleArea.getWidth() / 2, visibleArea.getY() + visibleArea.getHeight() / 2,
-				visibleArea.getRadius(), Color.RED);
+		// Gdx.gl.glColorMask(false, false, false, true);
+		// spriteBatch.setBlendFunction(GL20.GL_ZERO, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		// shapeDrawer.filledCircle(visibleArea.getX() + visibleArea.getWidth() / 2, visibleArea.getY() + visibleArea.getHeight() / 2,
+		// visibleArea.getRadius(), Color.RED);
 
 		spriteBatch.flush();
 		spriteBatch.end();
