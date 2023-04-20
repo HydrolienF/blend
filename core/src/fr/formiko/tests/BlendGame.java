@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -68,7 +67,7 @@ public class BlendGame extends ApplicationAdapter {
 
 		donutsPoints.add(new Point(0, 0));
 		donutsPoints.add(new Point(30, 0));
-		donutsPoints.add(new Point(-60, 0));
+		// donutsPoints.add(new Point(-60, 0));
 		// lots of invisible donuts
 		// for (int i = 0; i < 1000000; i++) {
 		// donutsPoints.add(new Point(1000 + i, 1000 + i));
@@ -78,7 +77,7 @@ public class BlendGame extends ApplicationAdapter {
 		// donutsPoints.add(new Point((int) (Math.random() * 1000), (int) (Math.random() * 1000)));
 		// }
 
-		pxmVisible = new Pixmap(new FileHandle("visible2.png"));
+		pxmVisible = new Pixmap(Gdx.files.internal("visible2.png"));
 
 		rectangle1 = new Rectangle(0, 0, 0, 0);
 		rectangle2 = new Rectangle(0, 0, 0, 0);
