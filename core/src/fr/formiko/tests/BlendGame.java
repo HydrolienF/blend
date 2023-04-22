@@ -29,7 +29,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
 public class BlendGame extends ApplicationAdapter {
 	private SpriteBatch spriteBatch;
 	private Texture donut;
-	private List<Integer> times = new ArrayList<>();
+	private List<Integer> times = new ArrayList<Integer>();
 	private Pixmap pxmVisible;
 	private Set<VisibleArea> visibleAreas = new HashSet<VisibleArea>();
 	private List<Point> donutsPoints = new ArrayList<Point>();
@@ -131,7 +131,6 @@ public class BlendGame extends ApplicationAdapter {
 
 		spriteBatch.flush();
 		spriteBatch.end();
-		Gdx.gl.glColorMask(true, true, true, true);
 
 		/* Restore defaults. */
 		Gdx.gl.glDisable(GL30.GL_BLEND);
@@ -152,6 +151,7 @@ public class BlendGame extends ApplicationAdapter {
 		for (VisibleArea visibleArea : visibleAreas) {
 			// draw visible area into a frame buffer.
 			getFrameBuffers(visibleArea.getRadius()).bind();
+			ScreenUtils.clear(Color.CLEAR);
 			drawVisibleAreaCreature(visibleArea);
 			drawVisibleAreaMask(visibleArea);
 			getFrameBuffers(visibleArea.getRadius()).end();
@@ -160,7 +160,8 @@ public class BlendGame extends ApplicationAdapter {
 			Texture texture = getFrameBuffers(visibleArea.getRadius()).getColorBufferTexture();
 			Sprite sprite = new Sprite(texture);
 			sprite.flip(false, true);
-			sprite.setPosition(visibleArea.getX(), visibleArea.getY());
+			// sprite.setPosition(visibleArea.getX(), visibleArea.getY());
+			sprite.setCenter(visibleArea.getCenterX(), visibleArea.getCenterY());
 			spriteBatch.begin();
 			sprite.draw(spriteBatch);
 			spriteBatch.end();
@@ -224,6 +225,8 @@ public class BlendGame extends ApplicationAdapter {
 		public int getRadius() { return radius; }
 		public int getWidth() { return radius * 2; }
 		public int getHeight() { return radius * 2; }
+		public int getCenterX() { return x + radius; }
+		public int getCenterY() { return y + radius; }
 	}
 	private static class Point {
 		public float x;
